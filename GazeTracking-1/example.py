@@ -1,7 +1,7 @@
-
 import cv2
 import json
 from gaze_tracking import GazeTracking
+from deepface import DeepFace
 
 gaze = GazeTracking()
 video_capture = cv2.VideoCapture("vid1.flv")
@@ -9,7 +9,7 @@ num_looking_center = 0
 num_looking_left = 0
 num_looking_right = 0
 num_faces_detected = 0
-lst, grp, a = [], [], 0
+lst, grp, a, em = [], [], 0 ,[]
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
@@ -19,8 +19,10 @@ while True:
     ret, frame = video_capture.read()
     if not ret:
         break
-
+    face_analysis = DeepFace.analyze(frame,actions=["emotion"], enforce_detection=False)
+    print(face_analysis)
     faces = face_cascade.detectMultiScale(frame, 1.1, 4)
+    
     print(len(faces))
     for (x, y, w, h) in faces:
         num_faces_detected += 1
@@ -29,6 +31,9 @@ while True:
         lst.append(0)
     else:
         lst.append(1)     # ___    
+    if len(faces) ==1:
+        face_analysis = DeepFace.analyze(frame,actions=["emotion"], enforce_detection=False)
+        em.append(face_analysis[0]["emotion"])
 
     gaze.refresh(frame)
     new_frame = gaze.annotated_frame()
